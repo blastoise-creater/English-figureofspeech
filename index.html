@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Figures of Speech Quiz</title>
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles to enhance Tailwind, especially for interactive elements */
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #e0f2f7; /* Light blue background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 16px; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 700px; /* Slightly wider */
+            width: 100%;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        .question-text {
+            font-size: 1.4rem; /* Larger font for questions */
+            font-weight: 600;
+            color: #2c3e50; /* Darker text */
+            line-height: 1.6;
+        }
+        .option-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px; /* Rounded options */
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            margin-bottom: 12px;
+            background-color: #f9f9f9;
+        }
+        .option-item:hover:not(.selected):not(.correct):not(.wrong) {
+            background-color: #e6f7ff; /* Light blue on hover */
+            border-color: #90cdf4;
+        }
+        .option-item input[type="radio"] {
+            margin-right: 15px;
+            transform: scale(1.3); /* Larger radio buttons */
+            accent-color: #3498db; /* Blue accent for radio buttons */
+        }
+        .option-item label {
+            flex-grow: 1;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: #34495e;
+        }
+        .option-item.selected {
+            border-color: #3498db; /* Blue border for selected */
+            background-color: #eaf6fc;
+        }
+        .option-item.correct {
+            background-color: #e6ffe6; /* Light green for correct */
+            border-color: #28a745; /* Green border */
+        }
+        .option-item.wrong {
+            background-color: #ffe6e6; /* Light red for wrong */
+            border-color: #dc3545; /* Red border */
+        }
+        .feedback-message {
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            display: none; /* Hidden by default */
+        }
+        .feedback-message.correct {
+            color: #1a7e32;
+            background-color: #d4edda;
+        }
+        .feedback-message.wrong {
+            color: #8b2b3a;
+            background-color: #f8d7da;
+        }
+        .navigation-buttons button {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .navigation-buttons button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+        .navigation-buttons button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .navigation-buttons button:disabled {
+            background-color: #cccccc !important;
+            color: #666666 !important;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        #next-btn, #reset-quiz-btn {
+            background-color: #3498db; /* Blue */
+            color: white;
+        }
+        #next-btn:hover:not(:disabled), #reset-quiz-btn:hover:not(:disabled) {
+            background-color: #2980b9;
+        }
+        #prev-btn {
+            background-color: #95a5a6; /* Grey */
+            color: white;
+        }
+        #prev-btn:hover:not(:disabled) {
+            background-color: #7f8c8d;
+        }
+        #submit-answer-btn {
+            background-color: #2ecc71; /* Green */
+            color: white;
+        }
+        #submit-answer-btn:hover:not(:disabled) {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body class="bg-blue-100 flex items-center justify-center min-h-screen p-5">
+
+    <div class="quiz-container">
+        <h1 class="text-4xl font-extrabold text-center text-blue-700 mb-6">Figures of Speech Quiz</h1>
+
+        <div id="quiz-question-area" class="flex flex-col gap-5">
+            <div id="question-num" class="text-xl font-semibold text-gray-600">Question 1 of 10</div>
+            <div id="current-question-text" class="question-text">Loading question...</div>
+
+            <ul id="options-container" class="options-list">
+                <!-- Options will be dynamically loaded here by JavaScript -->
+            </ul>
+
+            <div id="feedback-message" class="feedback-message"></div>
+        </div>
+
+        <div class="navigation-buttons flex justify-between items-center mt-6">
+            <button id="prev-btn" class="px-6 py-3 rounded-lg shadow-md" disabled>Previous</button>
+            <button id="submit-answer-btn" class="px-6 py-3 rounded-lg shadow-md">Submit Answer</button>
+            <button id="next-btn" class="px-6 py-3 rounded-lg shadow-md">Next</button>
+        </div>
+        <div class="flex justify-center mt-4">
+            <button id="reset-quiz-btn" class="px-6 py-3 rounded-lg shadow-md">Start New Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        // Array containing all quiz questions
+        const allQuestions = [
+            {
+                questionText: "The old house groaned in the wind.",
+                options: ["Simile", "Metaphor", "Personification", "Irony"],
+                correctAnswer: "Personification"
+            },
+            {
+                questionText: "\"She sells seashells by the seashore.\"",
+                options: ["Imagery", "Irony", "Alliteration", "Pun"],
+                correctAnswer: "Alliteration"
+            },
+            {
+                questionText: "The classroom was a circus during the lunch break.",
+                options: ["Simile", "Metaphor", "Personification", "Refrain"],
+                correctAnswer: "Metaphor"
+            },
+            {
+                questionText: "Her voice was as smooth as silk.",
+                options: ["Imagery", "Simile", "Metaphor", "Pun"],
+                correctAnswer: "Simile"
+            },
+            {
+                questionText: "The fire station burned down.",
+                options: ["Pun", "Refrain", "Personification", "Irony"],
+                correctAnswer: "Irony"
+            },
+            {
+                questionText: "The aroma of fresh coffee filled the air, rich and invigorating.",
+                options: ["Alliteration", "Imagery", "Simile", "Metaphor"],
+                correctAnswer: "Imagery"
+            },
+            {
+                questionText: "\"Row, row, row your boat, / Gently down the stream. / Merrily, merrily, merrily, merrily, / Life is but a dream.\" (The repeated 'merrily')",
+                options: ["Imagery", "Alliteration", "Refrain", "Pun"],
+                correctAnswer: "Refrain"
+            },
+            {
+                questionText: "The silence in the abandoned building was deafening.",
+                options: ["Alliteration", "Irony", "Personification", "Simile"],
+                correctAnswer: "Irony"
+            },
+            {
+                questionText: "Why did the student bring a ladder to class? Because she wanted to go to high school.",
+                options: ["Irony", "Simile", "Pun", "Metaphor"],
+                correctAnswer: "Pun"
+            },
+            {
+                questionText: "The fog was a soft, white blanket over the fields.",
+                options: ["Simile", "Metaphor", "Personification", "Alliteration"],
+                correctAnswer: "Metaphor"
+            },
+            {
+                questionText: "The sun peeked shyly from behind the clouds.",
+                options: ["Simile", "Metaphor", "Personification", "Imagery"],
+                correctAnswer: "Personification"
+            },
+            {
+                questionText: "\"Big bears bounce balls bravely.\"",
+                options: ["Imagery", "Irony", "Alliteration", "Refrain"],
+                correctAnswer: "Alliteration"
+            },
+            {
+                questionText: "Her heart was a stone.",
+                options: ["Simile", "Metaphor", "Personification", "Pun"],
+                correctAnswer: "Metaphor"
+            },
+            {
+                questionText: "The news hit me like a ton of bricks.",
+                options: ["Imagery", "Simile", "Metaphor", "Irony"],
+                correctAnswer: "Simile"
+            },
+            {
+                questionText: "A traffic jam when you're already late.",
+                options: ["Pun", "Refrain", "Personification", "Irony"],
+                correctAnswer: "Irony"
+            },
+            {
+                questionText: "The metallic taste of blood filled his mouth after the fall.",
+                options: ["Alliteration", "Imagery", "Simile", "Personification"],
+                correctAnswer: "Imagery"
+            },
+            {
+                questionText: "\"Every night in my dreams, I see you, I feel you. / That is how I know you go on.\" (The repeated lines/sentiment in a song)",
+                options: ["Imagery", "Alliteration", "Refrain", "Pun"],
+                correctAnswer: "Refrain"
+            },
+            {
+                questionText: "The doctor was sick with the flu.",
+                options: ["Alliteration", "Irony", "Personification", "Simile"],
+                correctAnswer: "Irony"
+            },
+            {
+                questionText: "I used to be a baker, but I couldn't make enough dough.",
+                options: ["Irony", "Simile", "Pun", "Metaphor"],
+                correctAnswer: "Pun"
+            },
+            {
+                questionText: "Our principal is the head of the school.",
+                options: ["Simile", "Metaphor", "Personification", "Alliteration"],
+                correctAnswer: "Metaphor"
+            },
+            {
+                questionText: "Opportunity knocked at his door.",
+                options: ["Simile", "Metaphor", "Personification", "Irony"],
+                correctAnswer: "Personification"
+            },
+            {
+                questionText: "\"Tiny Timmy told tall tales.\"",
+                options: ["Imagery", "Irony", "Alliteration", "Refrain"],
+                correctAnswer: "Alliteration"
+            },
+            {
+                questionText: "The politician's promises were just smoke and mirrors.",
+                options: ["Simile", "Metaphor", "Personification", "Pun"],
+                correctAnswer: "Metaphor"
+            },
+            {
+                questionText: "He was as hungry as a bear.",
+                options: ["Imagery", "Simile", "Metaphor", "Irony"],
+                correctAnswer: "Simile"
+            },
+            {
+                questionText: "The marriage counselor filed for divorce.",
+                options: ["Pun", "Refrain", "Personification", "Irony"],
+                correctAnswer: "Irony"
+            },
+            {
+                questionText: "The soft, velvety feel of the rose petal against her cheek.",
+                options: ["Alliteration", "Imagery", "Simile", "Personification"],
+                correctAnswer: "Imagery"
+            },
+            {
+                questionText: "\"Never say never again.\" (The repetition for emphasis in a title/slogan)",
+                options: ["Imagery", "Alliteration", "Refrain", "Pun"],
+                correctAnswer: "Refrain"
+            },
+            {
+                questionText: "A pilot who has a fear of heights.",
+                options: ["Alliteration", "Irony", "Personification", "Simile"],
+                correctAnswer: "Irony"
+            },
+            {
+                questionText: "What do you call a fake noodle? An impasta.",
+                options: ["Irony", "Simile", "Pun", "Metaphor"],
+                correctAnswer: "Pun"
+            },
+            {
+                questionText: "The city was a concrete jungle.",
+                options: ["Simile", "Metaphor", "Personification", "Alliteration"],
+                correctAnswer: "Metaphor"
+            },
+            {
+                questionText: "The flowers danced in the gentle breeze.",
+                options: ["Simile", "Metaphor", "Personification", "Imagery"],
+                correctAnswer: "Personification"
+            },
+            {
+                questionText: "\"Carrie cooked carrots carefully.\"",
+                options: ["Imagery", "Irony", "Alliteration", "Refrain"],
+                correctAnswer: "Alliteration"
+            },
+            {
+                questionText: "Time is money.",
+                options: ["Simile", "Metaphor", "Personification", "Pun"],
+                correctAnswer: "Metaphor"
+            },
+            {
+                questionText: "He was as strong as an ox.",
+                options: ["Imagery", "Simile", "Metaphor", "Irony"],
+                correctAnswer: "Simile"
+            },
+            {
+                questionText: "The weight of the world was on his shoulders.",
+                options: ["Pun", "Refrain", "Personification", "Metaphor"],
+                correctAnswer: "Metaphor"
+            },
+            {
+                questionText: "The crisp, salty air filled her lungs as she stood by the ocean.",
+                options: ["Alliteration", "Imagery", "Simile", "Personification"],
+                correctAnswer: "Imagery"
+            },
+            {
+                questionText: "In a song: \"Don't stop believin', hold on to that feelin'.\" (Repeated encouragement)",
+                options: ["Imagery", "Alliteration", "Refrain", "Pun"],
+                correctAnswer: "Refrain"
+            },
+            {
+                questionText: "A character steps out into a hurricane and says, \"What lovely weather!\"",
+                options: ["Alliteration", "Irony", "Personification", "Simile"],
+                correctAnswer: "Irony"
+            },
+            {
+                questionText: "What do you call a boomerang that won't come back? A stick.",
+                options: ["Irony", "Simile", "Pun", "Metaphor"],
+                correctAnswer: "Pun"
+            },
+            {
+                questionText: "Life is a roller coaster.",
+                options: ["Simile", "Metaphor", "Personification", "Alliteration"],
+                correctAnswer: "Metaphor"
+            },
+            {
+                questionText: "The alarm clock screamed at 6 AM.",
+                options: ["Simile", "Metaphor", "Personification", "Irony"],
+                correctAnswer: "Personification"
+            },
+            {
+                questionText: "\"Frightened frogs flew fast.\"",
+                options: ["Imagery", "Irony", "Alliteration", "Pun"],
+                correctAnswer: "Alliteration"
+            },
+            {
+                questionText: "My teacher is a walking encyclopedia.",
+                options: ["Simile", "Metaphor", "Personification", "Refrain"],
+                correctAnswer: "Metaphor"
+            },
+            {
+                questionText: "The problem was as clear as mud.",
+                options: ["Imagery", "Simile", "Metaphor", "Irony"],
+                correctAnswer: "Irony"
+            },
+            {
+                questionText: "A post on social media complaining about how useless social media is.",
+                options: ["Pun", "Refrain", "Personification", "Irony"],
+                correctAnswer: "Irony"
+            },
+            {
+                questionText: "The warm, fuzzy feeling of the kitten's fur beneath her fingers.",
+                options: ["Alliteration", "Imagery", "Simile", "Metaphor"],
+                correctAnswer: "Imagery"
+            },
+            {
+                questionText: "In a poem: \"Tell me not in mournful numbers, / Life is but an empty dream!\" (Repeated structure/idea)",
+                options: ["Imagery", "Alliteration", "Refrain", "Pun"],
+                correctAnswer: "Refrain"
+            },
+            {
+                questionText: "A character who is a police officer gets robbed.",
+                options: ["Alliteration", "Irony", "Personification", "Simile"],
+                correctAnswer: "Irony"
+            },
+            {
+                questionText: "\"I'm reading a book about anti-gravity. It's impossible to put down!\"",
+                options: ["Irony", "Simile", "Pun", "Metaphor"],
+                correctAnswer: "Pun"
+            },
+            {
+                questionText: "The vast ocean was a liquid mirror reflecting the sky.",
+                options: ["Simile", "Metaphor", "Personification", "Alliteration"],
+                correctAnswer: "Metaphor"
+            }
+        ];
+
+        // Global variables for quiz state
+        let quizQuestions = []; // The 10 questions for the current quiz session
+        let currentQuestionIndex = 0;
+        let userAnswers = []; // To store user's selected answer for each question
+        let hasAnsweredCurrentQuestion = false; // Flag to check if current question has been answered
+
+        // Get DOM elements
+        const questionNumElement = document.getElementById('question-num');
+        const currentQuestionTextElement = document.getElementById('current-question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackMessageElement = document.getElementById('feedback-message');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitAnswerBtn = document.getElementById('submit-answer-btn');
+        const resetQuizBtn = document.getElementById('reset-quiz-btn');
+
+        /**
+         * Shuffles an array in place using the Fisher-Yates algorithm.
+         * @param {Array} array The array to shuffle.
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+            }
+        }
+
+        /**
+         * Initializes the quiz by shuffling questions and selecting 10.
+         * Resets quiz state and displays the first question.
+         */
+        function initializeQuiz() {
+            // Shuffle all available questions
+            shuffleArray(allQuestions);
+            // Select the first 10 questions for this quiz session
+            quizQuestions = allQuestions.slice(0, 10);
+
+            currentQuestionIndex = 0;
+            userAnswers = new Array(quizQuestions.length).fill(null); // Initialize user answers
+            hasAnsweredCurrentQuestion = false;
+
+            // Hide feedback message and enable submit button
+            feedbackMessageElement.style.display = 'none';
+            submitAnswerBtn.disabled = false;
+
+            displayQuestion();
+        }
+
+        /**
+         * Displays the current question and its options.
+         * Manages button states (prev/next).
+         */
+        function displayQuestion() {
+            // Clear previous options
+            optionsContainer.innerHTML = '';
+            feedbackMessageElement.style.display = 'none';
+            feedbackMessageElement.className = 'feedback-message'; // Reset classes
+
+            const currentQuestion = quizQuestions[currentQuestionIndex];
+            questionNumElement.textContent = `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`;
+            currentQuestionTextElement.textContent = currentQuestion.questionText;
+
+            // Shuffle options for the current question to ensure randomness
+            const shuffledOptions = [...currentQuestion.options];
+            shuffleArray(shuffledOptions);
+
+            // Create and append options
+            shuffledOptions.forEach((option, index) => {
+                const li = document.createElement('li');
+                li.className = 'option-item';
+
+                const radioInput = document.createElement('input');
+                radioInput.type = 'radio';
+                radioInput.id = `option${index}`;
+                radioInput.name = 'quizOption';
+                radioInput.value = option;
+                radioInput.checked = (userAnswers[currentQuestionIndex] === option); // Check if previously selected
+
+                const label = document.createElement('label');
+                label.htmlFor = `option${index}`;
+                label.textContent = option;
+
+                li.appendChild(radioInput);
+                li.appendChild(label);
+                optionsContainer.appendChild(li);
+
+                // Add event listener to the radio input
+                radioInput.addEventListener('change', function() {
+                    // When an option is selected, update the user's answer for this question
+                    userAnswers[currentQuestionIndex] = this.value;
+                    // Reset feedback and styling on new selection if already answered
+                    resetOptionStyles();
+                    feedbackMessageElement.style.display = 'none';
+                    feedbackMessageElement.className = 'feedback-message';
+                    submitAnswerBtn.disabled = false; // Re-enable submit if changed
+                });
+
+                // Add click listener to the list item itself for better UX
+                li.addEventListener('click', function() {
+                    radioInput.checked = true;
+                    radioInput.dispatchEvent(new Event('change')); // Trigger change event on radio
+                });
+            });
+
+            // Update navigation button states
+            prevBtn.disabled = currentQuestionIndex === 0;
+            nextBtn.disabled = currentQuestionIndex === quizQuestions.length - 1;
+
+            // If the user has already answered this question, show feedback and disable options
+            if (userAnswers[currentQuestionIndex] !== null) {
+                checkAnswer(true); // Re-evaluate and show feedback without changing answer
+                disableOptions();
+                submitAnswerBtn.disabled = true;
+            } else {
+                // If not answered, ensure options are enabled and submit button is too
+                enableOptions();
+                submitAnswerBtn.disabled = false;
+            }
+        }
+
+        /**
+         * Checks the selected answer against the correct answer and provides feedback.
+         * @param {boolean} isRecheck - True if simply re-displaying feedback for an already answered question.
+         */
+        function checkAnswer(isRecheck = false) {
+            const selectedOptionValue = userAnswers[currentQuestionIndex];
+            const currentQuestion = quizQuestions[currentQuestionIndex];
+            const correct = (selectedOptionValue === currentQuestion.correctAnswer);
+
+            feedbackMessageElement.style.display = 'block';
+            feedbackMessageElement.className = 'feedback-message'; // Reset classes
+
+            if (correct) {
+                feedbackMessageElement.textContent = 'Correct!';
+                feedbackMessageElement.classList.add('correct');
+            } else {
+                feedbackMessageElement.textContent = 'Wrong! The correct answer was: ' + currentQuestion.correctAnswer;
+                feedbackMessageElement.classList.add('wrong');
+            }
+
+            // Apply styling to options
+            const options = optionsContainer.querySelectorAll('.option-item');
+            options.forEach(optionLi => {
+                const radio = optionLi.querySelector('input[type="radio"]');
+                optionLi.classList.remove('selected', 'correct', 'wrong'); // Clear previous states
+
+                if (radio.value === selectedOptionValue) {
+                    optionLi.classList.add('selected'); // Mark selected
+                }
+
+                if (radio.value === currentQuestion.correctAnswer) {
+                    optionLi.classList.add('correct'); // Mark correct
+                } else if (radio.value === selectedOptionValue && !correct) {
+                    optionLi.classList.add('wrong'); // Mark wrong if selected and incorrect
+                }
+            });
+
+            // Disable options after checking answer
+            if (!isRecheck) { // Only disable if it's a new submission, not just a recheck
+                disableOptions();
+                submitAnswerBtn.disabled = true;
+            }
+        }
+
+        /**
+         * Disables all radio buttons for the current question.
+         */
+        function disableOptions() {
+            const radioButtons = optionsContainer.querySelectorAll('input[type="radio"]');
+            radioButtons.forEach(radio => radio.disabled = true);
+        }
+
+        /**
+         * Enables all radio buttons for the current question.
+         */
+        function enableOptions() {
+            const radioButtons = optionsContainer.querySelectorAll('input[type="radio"]');
+            radioButtons.forEach(radio => radio.disabled = false);
+        }
+
+        /**
+         * Resets the styling of all options.
+         */
+        function resetOptionStyles() {
+            const options = optionsContainer.querySelectorAll('.option-item');
+            options.forEach(optionLi => {
+                optionLi.classList.remove('selected', 'correct', 'wrong');
+            });
+        }
+
+        // Event Listeners for buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentQuestionIndex < quizQuestions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+            }
+        });
+
+        submitAnswerBtn.addEventListener('click', () => {
+            if (userAnswers[currentQuestionIndex] !== null) {
+                checkAnswer();
+            } else {
+                // Optionally, alert user to select an option
+                feedbackMessageElement.textContent = 'Please select an option before submitting!';
+                feedbackMessageElement.classList.add('wrong');
+                feedbackMessageElement.style.display = 'block';
+            }
+        });
+
+        resetQuizBtn.addEventListener('click', initializeQuiz);
+
+        // Initialize the quiz when the page loads
+        document.addEventListener('DOMContentLoaded', initializeQuiz);
+
+    </script>
+</body>
+</html>
